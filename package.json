@@ -1,0 +1,47 @@
+{
+    "name": "teamsync-uni-server",
+    "version": "1.0.0",
+    "description": "my uni project. asana 0.1. server",
+    "main": "index.ts",
+    "private": true,
+    "esModuleInterop": true,
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "nodemon index.ts"
+    },
+    "keywords": [],
+    "author": "CatOfJupit3r",
+    "license": "ISC",
+    "dependencies": {
+        "axios": "^1.6.7",
+        "bcrypt": "^5.1.1",
+        "bcryptjs": "^2.4.3",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.5",
+        "express": "^4.19.2",
+        "express-async-errors": "^3.1.1",
+        "jsonwebtoken": "^9.0.2",
+        "lodash": "^4.17.21",
+        "mongoose": "^8.2.3"
+    },
+    "devDependencies": {
+        "@tsconfig/recommended": "^1.0.4",
+        "@typegoose/typegoose": "^12.2.0",
+        "@types/bcrypt": "^5.0.2",
+        "@types/cors": "^2.8.17",
+        "@types/express": "^4.17.21",
+        "@types/jsonwebtoken": "^9.0.6",
+        "@types/lodash": "^4.17.0",
+        "@types/node": "^20",
+        "@types/react": "^18",
+        "@types/react-dom": "^18",
+        "@typescript-eslint/eslint-plugin": "^7.3.1",
+        "@typescript-eslint/parser": "^7.3.1",
+        "eslint": "^8.57.0",
+        "nodemon": "^3.1.0",
+        "prettier": "3.2.5",
+        "prettier-plugin-organize-imports": "^3.2.4",
+        "ts-node": "^10.9.2",
+        "typescript": "^5"
+    }
+}
