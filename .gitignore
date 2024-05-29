@@ -1,2 +1,10 @@
 .env
 node_modules
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/.gitignore
+/.idea/jsLibraryMappings.xml
+/.idea/modules.xml
+/.idea/prettier.xml
+/.idea/teamsync-uni-server.iml
+/.idea/vcs.xml

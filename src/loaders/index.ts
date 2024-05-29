@@ -13,6 +13,8 @@ const RootLoader = async (app: Express, server: http.Server) => {
     console.log('Starting express server...')
     await ExpressLoader(app)
     console.log('Express server started successfully!')
+
+    console.log('Root loader finished!')
 }
 
 export default RootLoader

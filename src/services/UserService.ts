@@ -1,8 +1,8 @@
 import bcrypt from 'bcrypt'
 import { omit } from 'lodash'
 import { Types } from 'mongoose'
+import { UserClass } from '../models/DatabaseModels'
 import { Forbidden, NotFound } from '../models/ErrorModels'
-import { UserClass } from '../models/userModel'
 import AuthService from './AuthService'
 import DatabaseService from './DatabaseService'
 
@@ -51,18 +51,20 @@ class UserService {
         AuthService.invalidateRefreshToken(refreshToken)
     }
 
-    async getJoinedLobbiesInfo(token: string) {
+    async getProfile(token: string): Promise<{
+        name: string
+        handle: string
+        createdAt: Date
+    }> {
         const decoded = AuthService.verifyAccessToken(token)
         const user = await DatabaseService.getUser(decoded._id)
         if (!user) throw new NotFound('User not found')
-        return DatabaseService.getJoinedLobbiesInfo(decoded._id)
-    }
-
-    async getProfile(token: string) {
-        const decoded = AuthService.verifyAccessToken(token)
-        const user = await DatabaseService.getUser(decoded._id)
-        if (!user) throw new NotFound('User not found')
-        return user
+        const { name, handle, createdAt } = user
+        return {
+            name,
+            handle,
+            createdAt,
+        }
     }
 
     async findById(_id: string, shouldIncludePrivateFields: boolean) {
