@@ -4,7 +4,6 @@ import {authenticationMiddleware} from "../middleware/AuthenticationMiddleware";
 
 const router = Router()
 
-router.use(authenticationMiddleware)
 
 router.get('/', UserController.getProfile.bind(UserController))
 

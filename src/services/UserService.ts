@@ -11,13 +11,13 @@ class UserService {
 
     #omitPrivateFields = (user: any) => omit(user, this.#privateFields)
 
-    async createAccount({ handle, password }: { handle: string; password: string }) {
+    async createAccount({ handle, password, name }: { handle: string; password: string, name: string }) {
         const user = await this.findByHandle(handle, false)
         if (user) throw new Error(`User with handle ${handle} is already registered`)
 
         const hashedPassword = await bcrypt.hash(password, 10)
 
-        const _id = await DatabaseService.createNewUser(handle, hashedPassword)
+        const _id = await DatabaseService.createNewUser(handle, hashedPassword, name)
 
         console.log(`Registered new user with handle: ${handle}. Id: ${_id}`)
     }

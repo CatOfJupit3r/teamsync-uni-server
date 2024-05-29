@@ -24,16 +24,23 @@ class LoginController {
     }
 
     async register(req: Request, res: Response) {
-        const { handle, password } = req.body
-        InputValidator.validateObject({ handle, password }, { handle: 'string', password: 'string' }, true)
+        const { handle, password, name } = req.body
+        InputValidator.validateObject(
+            { handle, password, name },
+            {
+                handle: 'string',
+                password: 'string',
+                name: 'string',
+            },
+            true
+        )
         if (password.length < 8) throw new BadRequest('Password must be at least 8 characters long')
 
         try {
-            await UserService.createAccount({ handle, password })
+            await UserService.createAccount({ handle, password, name })
             const { accessToken, refreshToken } = await UserService.loginWithPassword({ handle, password })
             return res.status(200).json({ accessToken, refreshToken })
         } catch (error: unknown) {
-            console.log(error)
             throw new Forbidden(error instanceof Error ? error.message : '')
         }
     }

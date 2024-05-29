@@ -1,7 +1,7 @@
 import { DocumentType } from '@typegoose/typegoose'
 import mongoose, { Types } from 'mongoose'
 import { ProjectClass, ProjectModel, UserClass, UserModel, UserOnProjectClass } from '../models/DatabaseModels'
-import {BadRequest, Conflict, Forbidden, InternalServerError} from '../models/ErrorModels'
+import { BadRequest, Conflict, Forbidden, InternalServerError } from '../models/ErrorModels'
 
 class DatabaseService {
     public connect = async (): Promise<void> => {
@@ -14,13 +14,18 @@ class DatabaseService {
                 validateBeforeSave: true,
             })
         } catch (e) {
-            console.log(`Validation failed for creation of ${document.baseModelName}`, e)
-            throw new InternalServerError()
+            console.log(e)
+            throw new InternalServerError('Error saving your document!')
         }
     }
 
     private getUserAndProject = async (userId: string, projectId: string) => {
-        const project = await ProjectModel.findOne({ _id: new Types.ObjectId(projectId) })
+        let project = null
+        try {
+            project = await ProjectModel.findOne({ _id: new Types.ObjectId(projectId) })
+        } catch (e) {
+            throw new BadRequest('Error finding project')
+        }
         if (!project) throw new InternalServerError('Project not found')
         const user = project.users.find((user) => user.userId === userId)
         if (!user) throw new InternalServerError('User not found in project')
@@ -39,9 +44,8 @@ class DatabaseService {
         return UserModel.findOne({ handle })
     }
 
-    public createNewUser = async (handle: string, hashedPassword: string): Promise<Types.ObjectId> => {
-        const user = new UserModel({ handle, hashedPassword, createdAt: new Date() })
-        console.log('Creating user', user)
+    public createNewUser = async (handle: string, hashedPassword: string, name: string): Promise<Types.ObjectId> => {
+        const user = new UserModel({ handle, hashedPassword, name, createdAt: new Date(), _id: new Types.ObjectId() })
         await this.saveDocument(user)
         return user._id
     }
@@ -67,9 +71,14 @@ class DatabaseService {
             description: projectDescription,
             users: [{ userId: userId, role: 'admin' }],
             createdAt: new Date(),
+            _id: new Types.ObjectId(),
         })
         await this.saveDocument(project)
-        return project._id
+        return {
+            projectId: project._id.toString(),
+            projectName: project.name,
+            role: 'admin',
+        }
     }
 
     public createTask = async (
@@ -138,7 +147,8 @@ class DatabaseService {
 
     public changeTaskStatus = async (userId: string, projectId: string, taskId: string, completed: boolean) => {
         const { user, project } = await this.getUserAndProject(userId, projectId)
-        if (await this.checkIfUserIsAllowed(user)) throw new InternalServerError('User not allowed to change task status')
+        if (await this.checkIfUserIsAllowed(user))
+            throw new InternalServerError('User not allowed to change task status')
         const task = project.tasks.find((task) => task._id.toString() === taskId)
         if (!task) throw new InternalServerError('Task not found')
         task.completed = completed
@@ -147,7 +157,8 @@ class DatabaseService {
 
     public changeTaskAssignee = async (userId: string, projectId: string, taskId: string, assigneeId: string) => {
         const { user, project } = await this.getUserAndProject(userId, projectId)
-        if (await this.checkIfUserIsAllowed(user)) throw new InternalServerError('User not allowed to change task assignee')
+        if (await this.checkIfUserIsAllowed(user))
+            throw new InternalServerError('User not allowed to change task assignee')
         const task = project.tasks.find((task) => task._id.toString() === taskId)
         if (!task) throw new InternalServerError('Task not found')
         task.responsibleUsers = [assigneeId]
@@ -156,7 +167,8 @@ class DatabaseService {
 
     public changeTaskDueDate = async (userId: string, projectId: string, taskId: string, dueDate: string) => {
         const { user, project } = await this.getUserAndProject(userId, projectId)
-        if (await this.checkIfUserIsAllowed(user)) throw new InternalServerError('User not allowed to change task due date')
+        if (await this.checkIfUserIsAllowed(user))
+            throw new InternalServerError('User not allowed to change task due date')
         const task = project.tasks.find((task) => task._id.toString() === taskId)
         if (!task) throw new InternalServerError('Task not found')
         task.dueDate = new Date(dueDate)
@@ -165,19 +177,26 @@ class DatabaseService {
 
     public changeProjectName = async (userId: string, projectId: string, name: string) => {
         const { user, project } = await this.getUserAndProject(userId, projectId)
-        if (await this.checkIfUserIsAllowed(user)) throw new InternalServerError('User not allowed to change project name')
+        if (await this.checkIfUserIsAllowed(user))
+            throw new InternalServerError('User not allowed to change project name')
         project.name = name
         await this.saveDocument(project)
     }
 
     public changeProjectDescription = async (userId: string, projectId: string, description: string) => {
         const { user, project } = await this.getUserAndProject(userId, projectId)
-        if (await this.checkIfUserIsAllowed(user)) throw new InternalServerError('User not allowed to change project description')
+        if (await this.checkIfUserIsAllowed(user))
+            throw new InternalServerError('User not allowed to change project description')
         project.description = description
         await this.saveDocument(project)
     }
 
-    public changeUserRole = async (userId: string, projectId: string, targetUserId: string, role: 'owner' | 'manager' | 'participant' | 'viewer') => {
+    public changeUserRole = async (
+        userId: string,
+        projectId: string,
+        targetUserId: string,
+        role: 'owner' | 'manager' | 'participant' | 'viewer'
+    ) => {
         const { user, project } = await this.getUserAndProject(userId, projectId)
         if (await this.checkIfUserIsAllowed(user)) throw new InternalServerError('User not allowed to change user role')
         const targetUser = project.users.find((user) => user.userId === targetUserId)

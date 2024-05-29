@@ -7,15 +7,17 @@ import userRoutes from '../routes/userRoutes'
 import projectRoutes from '../routes/projectRoutes'
 
 import {errorHandlerMiddleware} from '../middleware/ErrorHandlerMiddleware'
+import {authenticationMiddleware} from "../middleware/AuthenticationMiddleware";
 
 const ExpressLoader = async (app: Express) => {
     app.use(cors())
     app.use(express.json())
-    app.use(errorHandlerMiddleware)
 
     app.use('/', indexRoutes)
-    app.use('/user', userRoutes)
-    app.use('/project', projectRoutes)
+    app.use('/user', authenticationMiddleware, userRoutes)
+    app.use('/project', authenticationMiddleware, projectRoutes)
+
+    app.use(errorHandlerMiddleware)
 }
 
 export default ExpressLoader
