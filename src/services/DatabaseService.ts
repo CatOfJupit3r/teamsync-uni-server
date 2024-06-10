@@ -1,7 +1,7 @@
 import { DocumentType } from '@typegoose/typegoose'
 import mongoose, { Types } from 'mongoose'
 import { ProjectClass, ProjectModel, UserClass, UserModel, UserOnProjectClass } from '../models/DatabaseModels'
-import { BadRequest, Conflict, Forbidden, InternalServerError } from '../models/ErrorModels'
+import { BadRequest, Conflict, InternalServerError, NotFound } from '../models/ErrorModels'
 
 class DatabaseService {
     public connect = async (): Promise<void> => {
@@ -113,23 +113,50 @@ class DatabaseService {
         return inviteCode
     }
 
-    public joinProject = async (userId: string, projectId: string, inviteCode: string) => {
-        const project = await ProjectModel.findOne({ _id: new Types.ObjectId(projectId) })
-        if (!project) throw new InternalServerError('Project not found')
-        if (!project.inviteCodes.includes(inviteCode)) throw new Forbidden('Invite code not found')
+    public joinProject = async (userId: string, inviteCode: string) => {
+        const projects = await ProjectModel.find({ name: 'My New Project!' })
+        projects.forEach((project) => console.log(project.name, project.inviteCodes))
+        const project = projects.find((project) => project.inviteCodes.includes(inviteCode))
+        console.log(project, inviteCode, projects)
+        if (!project) throw new NotFound('Project not found')
         if (project.users.find((user) => user.userId === userId)) throw new Conflict('User already in project')
-        project.inviteCodes = project.inviteCodes.filter((code) => code !== inviteCode)
         project.users.push({ userId, role: 'participant' })
         await this.saveDocument(project)
     }
 
     public getProjectInfo = async (userId: string, projectId: string) => {
         const { user, project } = await this.getUserAndProject(userId, projectId)
+        const users = await Promise.all(
+            project.users.map(async (user) => {
+                const userDoc = await this.getUser(user.userId)
+                if (!userDoc) return null
+                return {
+                    userId: user.userId,
+                    role: user.role,
+                    name: userDoc.name,
+                }
+            })
+        )
+        const tasks = project.tasks.map((task) => {
+            return {
+                name: task.name,
+                description: task.description,
+                dueDate: task.dueDate,
+                completed: task.completed,
+                responsibleUsers: task.responsibleUsers.map((userId) => {
+                    const user = users.find((user) => user?.userId === userId)
+                    return user ? user.name : null
+                }),
+                _id: task._id,
+            }
+        })
         return {
             name: project.name,
             description: project.description,
             createdAt: project.createdAt,
             role: user.role,
+            tasks,
+            users: users.filter((user) => user !== null),
         }
     }
 

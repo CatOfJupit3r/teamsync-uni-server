@@ -34,8 +34,6 @@ class LoginController {
             },
             true
         )
-        if (password.length < 8) throw new BadRequest('Password must be at least 8 characters long')
-
         try {
             await UserService.createAccount({ handle, password, name })
             const { accessToken, refreshToken } = await UserService.loginWithPassword({ handle, password })

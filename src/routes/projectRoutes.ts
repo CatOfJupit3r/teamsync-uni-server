@@ -16,7 +16,7 @@ router.get('/:projectId/tasks/:taskId', ProjectController.getTaskInfo.bind(Proje
 // POST
 
 router.post('/create', ProjectController.createProject.bind(ProjectController))
-router.post('/:projectId/join', ProjectController.joinProject.bind(ProjectController))
+router.post('/join', ProjectController.joinProject.bind(ProjectController))
 router.post('/:projectId/new_invite', ProjectController.newInvite.bind(ProjectController))
 router.post('/:projectId/create_task', ProjectController.createTask.bind(ProjectController))
 
