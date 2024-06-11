@@ -52,20 +52,9 @@ export class Forbidden extends Exception {
     }
 }
 
-export class MethodNotAllowed extends Exception {
-    constructor(message: string = 'This method is not allowed', additionalData?: AdditionalData) {
-        super(message, 405, additionalData)
-    }
-}
-
 export class Conflict extends Exception {
     constructor(message: string = 'Conflict occurred', additionalData?: AdditionalData) {
         super(message, 409, additionalData)
     }
 }
 
-export class ServiceUnavailable extends Exception {
-    constructor(message: string = 'Service is temporarily unavailable', additionalData?: AdditionalData) {
-        super(message, 503, additionalData)
-    }
-}

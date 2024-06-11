@@ -54,7 +54,7 @@ class ProjectController {
         const { projectId } = req.params
         const token = AuthService.removeBearerPrefix(req.headers.authorization as string)
         const user = AuthService.verifyAccessToken(token)
-        res.json(await DatabaseService.newInvite(user._id, projectId)).status(200)
+        res.json({ inviteCode: await DatabaseService.newInvite(user._id, projectId) }).status(200)
     }
 
     async createTask(req: Request, res: Response) {
